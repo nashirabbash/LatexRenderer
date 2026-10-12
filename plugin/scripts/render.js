@@ -124,6 +124,8 @@ async function renderEquations() {
       let count = 0;
       for (let i = 0; i < positioned.length; i += 1) {
         const equation = positioned[i];
+        let sourceDeleted = false;
+        let sourcePosition;
         let bookmarkName;
         try {
           paragraphs = getParagraphs();
@@ -169,20 +171,34 @@ async function renderEquations() {
             continue;
           }
           bookmarkedRange.Select();
+          const start = bookmarkedRange.GetStartPos();
+          sourcePosition = start;
+          if (!bookmarkedRange.Delete()) {
+            failures.range += 1;
+            continue;
+          }
+          sourceDeleted = true;
+          removeBookmark(bookmarkName);
+          doc.MoveCursorToPos(start);
           if (!doc.AddMathEquation(equation.latex, "latex")) {
-            removeBookmark(bookmarkName);
+            doc.MoveCursorToPos(start);
+            doc.EnterText(equation.source);
+            sourceDeleted = false;
             failures.equation += 1;
             continue;
           }
-          if (!doc.GetBookmarkRange(bookmarkName)) {
-            const renderedRange = doc.GetRangeBySelect();
-            if (!renderedRange || !renderedRange.AddBookmark(bookmarkName) || !doc.GetBookmarkRange(bookmarkName)) {
-              failures.bookmarkRange += 1;
-              continue;
-            }
+          sourceDeleted = false;
+          const renderedRange = doc.GetRangeBySelect();
+          if (!renderedRange || !renderedRange.AddBookmark(bookmarkName)) {
+            failures.bookmarkRange += 1;
+            continue;
           }
           count += 1;
         } catch (_error) {
+          if (sourceDeleted) {
+            doc.MoveCursorToPos(sourcePosition);
+            doc.EnterText(equation.source);
+          }
           if (bookmarkName) removeBookmark(bookmarkName);
           failures.exception += 1;
         }

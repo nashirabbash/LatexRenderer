@@ -1,5 +1,6 @@
 # Changelog
 
+- Remove marked source before inserting native math so insertion-only editor behavior cannot leave duplicate LaTeX; preserve source on equation failures and bookmark inserted math for restoration.
 - Replace marked inline LaTeX with native equations and add source-restoration actions.
 
 - Support `$...$`, `\(...\)`, `$$...$$`, and `\[...\]` with inline or display paragraph layout and exact source restoration.

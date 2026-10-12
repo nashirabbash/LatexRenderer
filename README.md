@@ -31,7 +31,7 @@ Type `The result is $a^2+b^2=c^2$.` in a document, then select **Render Equation
 | `$$a+b$$` | Separate paragraph |
 | `\[a+b\]` | Separate paragraph |
 
-**Render Equations** scans document body, tables, headers, and footers. Unmatched delimiters remain unchanged. Failed equations remain as source and do not prevent later equations from rendering; panel reports rendered and failed counts. **De-render Selection** restores plugin-created equations intersecting current selection; **De-render All Equations** restores all equations created by this plugin. Neither action reconstructs LaTeX from equations created elsewhere.
+**Render Equations** scans document body, tables, headers, and footers. It removes each marked source before inserting the native equation, then bookmarks the equation for source restoration. Unmatched delimiters remain unchanged. Failed equations remain as source and do not prevent later equations from rendering; panel reports rendered and failed counts. **De-render Selection** restores plugin-created equations intersecting current selection; **De-render All Equations** restores all equations created by this plugin. Neither action reconstructs LaTeX from equations created elsewhere.
 
 ![Plugin architecture: user, panel, runtime, Document API, and document data](diagrams/plugin-architecture.png)
 
