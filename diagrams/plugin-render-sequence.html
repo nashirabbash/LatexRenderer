@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Render and restore sequence diagram</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&family=Noto+Serif:ital@0;1&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@400&family=Noto+Sans+TC:wght@400;500;600&family=Noto+Serif+TC:wght@400&display=swap" rel="stylesheet">
+  <style>
+    :root { --paper: #f5f5f5; --ink: #2d3142; --muted: #4f5d75; --soft: #7a8399; --accent: #eb6c36; --sans: 'Geist', system-ui, sans-serif; --mono: 'Geist Mono', monospace; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; width: 100%; min-height: 100%; background: var(--paper); color: var(--ink); }
+    body { font-family: var(--sans); }
+    .diagram-container { width: 100%; overflow-x: auto; }
+    svg { display: block; width: 100%; min-width: 1280px; }
+    @media print { .diagram-container { overflow-x: visible; } svg { min-width: 0; } }
+  </style>
+</head>
+<body>
+  <main class="diagram-container">
+    <svg viewBox="0 0 1280 720" width="1280" height="720" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="plugin-sequence-title plugin-sequence-desc">
+      <title id="plugin-sequence-title">LaTeX Renderer operation sequence</title>
+      <desc id="plugin-sequence-desc">Render and de-render requests pass from the user through the plugin panel and handlers to the ONLYOFFICE document API, which creates native equations and later restores their saved source.</desc>
+      <defs>
+        <marker id="plugin-sequence-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker>
+        <marker id="plugin-sequence-arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#eb6c36"/></marker>
+      </defs>
+
+      <g fill="none" stroke="#4f5d75" stroke-width="1" stroke-dasharray="3,3">
+        <line x1="112" y1="104" x2="112" y2="680"/>
+        <line x1="356" y1="104" x2="356" y2="680"/>
+        <line x1="600" y1="104" x2="600" y2="680"/>
+        <line x1="844" y1="104" x2="844" y2="680"/>
+        <line x1="1092" y1="104" x2="1092" y2="680"/>
+      </g>
+
+      <g fill="rgba(79,93,117,0.10)" stroke="#7a8399" stroke-width="0.8">
+        <rect x="352" y="154" width="8" height="220" rx="2"/>
+        <rect x="596" y="198" width="8" height="176" rx="2"/>
+        <rect x="840" y="242" width="8" height="88" rx="2"/>
+        <rect x="1088" y="286" width="8" height="34" rx="2"/>
+        <rect x="352" y="418" width="8" height="220" rx="2"/>
+        <rect x="596" y="462" width="8" height="176" rx="2"/>
+        <rect x="840" y="506" width="8" height="88" rx="2"/>
+        <rect x="1088" y="550" width="8" height="34" rx="2"/>
+      </g>
+
+      <g fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#plugin-sequence-arrow)">
+        <line x1="112" y1="150" x2="356" y2="150"/>
+        <line x1="356" y1="194" x2="600" y2="194"/>
+        <line x1="844" y1="282" x2="1092" y2="282"/>
+        <line x1="112" y1="414" x2="356" y2="414"/>
+        <line x1="356" y1="458" x2="600" y2="458"/>
+        <line x1="600" y1="502" x2="844" y2="502"/>
+        <line x1="844" y1="546" x2="1092" y2="546"/>
+      </g>
+      <line x1="600" y1="238" x2="844" y2="238" stroke="#eb6c36" stroke-width="1.2" marker-end="url(#plugin-sequence-arrow-accent)"/>
+      <g fill="none" stroke="#4f5d75" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#plugin-sequence-arrow)">
+        <line x1="844" y1="326" x2="600" y2="326"/>
+        <line x1="600" y1="370" x2="356" y2="370"/>
+        <line x1="844" y1="590" x2="600" y2="590"/>
+        <line x1="600" y1="634" x2="356" y2="634"/>
+      </g>
+
+      <g font-family="'Geist Mono', monospace" font-size="8" fill="#4f5d75" text-anchor="middle" letter-spacing="0.02em">
+        <rect x="150" y="128" width="168" height="14" rx="2" fill="#f5f5f5"/><text x="234" y="138">Render Equations</text>
+        <rect x="443" y="172" width="70" height="14" rx="2" fill="#f5f5f5"/><text x="478" y="182">render action</text>
+        <rect x="690" y="216" width="64" height="14" rx="2" fill="#f5f5f5"/><text x="722" y="226">API call</text>
+        <rect x="864" y="260" width="208" height="14" rx="2" fill="#f5f5f5"/><text x="968" y="270">find source · insert math · save marker</text>
+        <rect x="772" y="304" width="88" height="14" rx="2" fill="#f5f5f5"/><text x="816" y="314">render count</text>
+        <rect x="430" y="348" width="100" height="14" rx="2" fill="#f5f5f5"/><text x="480" y="358">render status</text>
+        <rect x="150" y="392" width="168" height="14" rx="2" fill="#f5f5f5"/><text x="234" y="402">De-render All</text>
+        <rect x="438" y="436" width="80" height="14" rx="2" fill="#f5f5f5"/><text x="478" y="446">restore action</text>
+        <rect x="690" y="480" width="64" height="14" rx="2" fill="#f5f5f5"/><text x="722" y="490">API call</text>
+        <rect x="866" y="524" width="204" height="14" rx="2" fill="#f5f5f5"/><text x="968" y="534">read bookmark · restore source</text>
+        <rect x="768" y="568" width="96" height="14" rx="2" fill="#f5f5f5"/><text x="816" y="578">restore count</text>
+        <rect x="430" y="612" width="100" height="14" rx="2" fill="#f5f5f5"/><text x="480" y="622">restore status</text>
+      </g>
+
+      <g>
+        <rect x="40" y="40" width="144" height="56" rx="6" fill="rgba(79,93,117,0.10)" stroke="#7a8399" stroke-width="1"/>
+        <text x="112" y="64" text-anchor="middle" fill="#2d3142" font-family="'Geist', sans-serif" font-size="12" font-weight="600">User</text>
+        <text x="112" y="82" text-anchor="middle" fill="#4f5d75" font-family="'Geist Mono', monospace" font-size="9">document editor</text>
+      </g>
+      <g>
+        <rect x="284" y="40" width="144" height="56" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+        <text x="356" y="64" text-anchor="middle" fill="#2d3142" font-family="'Geist', sans-serif" font-size="12" font-weight="600">Plugin panel</text>
+        <text x="356" y="82" text-anchor="middle" fill="#4f5d75" font-family="'Geist Mono', monospace" font-size="9">task pane</text>
+      </g>
+      <g>
+        <rect x="528" y="40" width="144" height="56" rx="6" fill="rgba(235,108,54,0.08)" stroke="#eb6c36" stroke-width="1.2"/>
+        <text x="600" y="64" text-anchor="middle" fill="#2d3142" font-family="'Geist', sans-serif" font-size="12" font-weight="600">Plugin logic</text>
+        <text x="600" y="82" text-anchor="middle" fill="#4f5d75" font-family="'Geist Mono', monospace" font-size="9">render · de-render</text>
+      </g>
+      <g>
+        <rect x="772" y="40" width="144" height="56" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+        <text x="844" y="64" text-anchor="middle" fill="#2d3142" font-family="'Geist', sans-serif" font-size="12" font-weight="600">Document API</text>
+        <text x="844" y="82" text-anchor="middle" fill="#4f5d75" font-family="'Geist Mono', monospace" font-size="9">editor calls</text>
+      </g>
+      <g>
+        <rect x="1020" y="40" width="144" height="56" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+        <text x="1092" y="64" text-anchor="middle" fill="#2d3142" font-family="'Geist', sans-serif" font-size="12" font-weight="600">Word document</text>
+        <text x="1092" y="82" text-anchor="middle" fill="#4f5d75" font-family="'Geist Mono', monospace" font-size="9">math + source</text>
+      </g>
+    </svg>
+  </main>
+</body>
+</html>

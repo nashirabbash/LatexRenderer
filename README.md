@@ -30,6 +30,10 @@ Type `The result is $a^2+b^2=c^2$.` in a document, then select **Render Equation
 
 **Render Equations** scans document body, tables, headers, and footers. Unmatched delimiters remain unchanged. **De-render Selection** restores plugin-created equations intersecting current selection; **De-render All Equations** restores all equations created by this plugin. Neither action reconstructs LaTeX from equations created elsewhere.
 
+![Plugin architecture: user, panel, runtime, Document API, and document data](diagrams/plugin-architecture.png)
+
+![Render and de-render message sequence](diagrams/plugin-render-sequence.png)
+
 Original marked text is stored in document custom properties and associated with equation bookmarks. Keep document in a format and editor that preserve these metadata if you need to restore source later. Other editors may convert equations or drop metadata; source restoration across editors is not guaranteed. Work on a copy when testing document conversions.
 
 The **Equation size** control is currently disabled; equation sizing is handled by Document Editor. Panel status reports rendered/restored counts and names the failing operation when restoration throws.

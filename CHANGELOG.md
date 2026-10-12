@@ -16,3 +16,4 @@
 - Report the failing document API stage when source restoration throws.
 - Resolve de-render targets through bookmark objects instead of direct bookmark-range lookup.
 - Document installation, development, supported markers, and MIT/third-party license boundaries.
+- Add title-free architecture and render/de-render sequence diagrams to README.
