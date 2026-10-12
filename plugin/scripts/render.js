@@ -76,7 +76,24 @@ async function renderEquations() {
           failures.property += 1;
           continue;
         }
-        const bookmarkedRange = doc.GetBookmarkRange(bookmarkName);
+        let bookmarkedRange = doc.GetBookmarkRange(bookmarkName);
+        if (!bookmarkedRange) {
+          failures.bookmarkRange += 1;
+          continue;
+        }
+        if (equation.display) {
+          const paragraphText = paragraphs[equation.paragraph].GetText();
+          const start = bookmarkedRange.GetStartPos();
+          if (equation.start + equation.source.length < paragraphText.length) {
+            doc.MoveCursorToPos(start + equation.source.length);
+            doc.InsertParagraphBreak();
+          }
+          if (equation.start > 0) {
+            doc.MoveCursorToPos(start);
+            doc.InsertParagraphBreak();
+          }
+        }
+        bookmarkedRange = doc.GetBookmarkRange(bookmarkName);
         if (!bookmarkedRange) {
           failures.bookmarkRange += 1;
           continue;
@@ -86,20 +103,6 @@ async function renderEquations() {
           doc.DeleteBookmark(bookmarkName);
           failures.equation += 1;
           continue;
-        }
-        if (equation.display) {
-          const paragraphText = paragraphs[equation.paragraph].GetText();
-          const insertedRange = doc.GetBookmarkRange(bookmarkName);
-          const start = insertedRange.GetStartPos();
-          const end = insertedRange.GetEndPos();
-          if (equation.start + equation.source.length < paragraphText.length) {
-            doc.MoveCursorToPos(end);
-            doc.InsertParagraphBreak();
-          }
-          if (equation.start > 0) {
-            doc.MoveCursorToPos(start);
-            doc.InsertParagraphBreak();
-          }
         }
         count += 1;
       }

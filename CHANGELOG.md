@@ -8,3 +8,4 @@
 - Set the plugin panel entry point to `index.html` for desktop loading.
 - Refresh document paragraphs after each equation insertion.
 - Report equation positioning, bookmark, metadata, and insertion failure counts.
+- Split display paragraphs before inserting math to retain source bookmarks.
