@@ -9,3 +9,5 @@
 - Refresh document paragraphs after each equation insertion.
 - Report equation positioning, bookmark, metadata, and insertion failure counts.
 - Split display paragraphs before inserting math to retain source bookmarks.
+
+- Render and restore marked equations throughout document body, tables, headers, and footers.
