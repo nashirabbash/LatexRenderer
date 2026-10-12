@@ -155,6 +155,13 @@ async function renderEquations() {
           failures.equation += 1;
           continue;
         }
+        if (!doc.GetBookmarkRange(bookmarkName)) {
+          const renderedRange = doc.GetRangeBySelect();
+          if (!renderedRange || !renderedRange.AddBookmark(bookmarkName) || !doc.GetBookmarkRange(bookmarkName)) {
+            failures.bookmarkRange += 1;
+            continue;
+          }
+        }
         count += 1;
       }
       return JSON.stringify({ count, unpositioned: equations.length - positioned.length, failures });

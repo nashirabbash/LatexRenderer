@@ -12,3 +12,4 @@
 
 - Render and restore marked equations throughout document body, tables, headers, and footers.
 - Restore selected equations when paragraph ranges overlap but editor intersection is empty.
+- Recreate equation ownership bookmarks when equation insertion removes the original bookmark.

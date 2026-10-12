@@ -212,3 +212,30 @@ test("de-renders a selected equation when range intersection misses an overlappi
 
   expect(regions.body.text).toBe(before.replace(renderedEquation, selectedSource));
 });
+
+test("retains de-render ownership when equation insertion replaces its original bookmark", async () => {
+  const render = makeButton();
+  attachRenderAction(render);
+  const insertEquation = document.AddMathEquation;
+  document.AddMathEquation = (latex) => {
+    const sourceRange = document.selected;
+    const bookmarkName = sourceRange.name;
+    const inserted = insertEquation(latex);
+    document.bookmarks.delete(bookmarkName);
+    const renderedText = `[${latex}]`;
+    document.currentRange = makeRange(sourceRange.paragraph, sourceRange.GetStartPos(), renderedText, renderedText.length);
+    return inserted;
+  };
+  await render.click();
+
+  expect(document.GetAllBookmarksNames()).toHaveLength(16);
+  const selection = makeButton();
+  const all = makeButton();
+  attachDerenderActions(selection, all);
+  await all.click();
+
+  expect(regions.body.text).toBe("Body $unfinished\n\\$5 $a$ \\(b\\) $$c$$ \\[d\\]");
+  expect(regions.table.text).toBe("Table $unfinished\n\\$5 $a$ \\(b\\) $$c$$ \\[d\\]");
+  expect(regions.header.text).toBe("Header $unfinished\n\\$5 $a$ \\(b\\) $$c$$ \\[d\\]");
+  expect(regions.footer.text).toBe("Footer $unfinished\n\\$5 $a$ \\(b\\) $$c$$ \\[d\\]");
+});
