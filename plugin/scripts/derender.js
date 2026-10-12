@@ -12,7 +12,7 @@ async function derender(selectionOnly) {
   log("debug", "derender_started", { scope });
   try {
     window.Asc.scope.selectionOnly = selectionOnly;
-    const restored = await callEditor(function () {
+    const result = JSON.parse(await callEditor(function () {
       const doc = Api.GetDocument();
       const properties = doc.GetCustomProperties();
       const names = doc.GetAllBookmarksNames().filter((name) => name.indexOf("latexRenderer_") === 0);
@@ -22,25 +22,37 @@ async function derender(selectionOnly) {
       for (let i = 0; i < names.length; i += 1) {
         const range = doc.GetBookmarkRange(names[i]);
         if (!range) continue;
-        if (Asc.scope.selectionOnly && (!selectedRange || !range.IntersectWith(selectedRange))) continue;
+        if (Asc.scope.selectionOnly) {
+          if (!selectedRange) continue;
+          const start = selectedRange.GetStartPos();
+          const end = selectedRange.GetEndPos();
+          const intersects = range.IntersectWith(selectedRange) || (start === end && start >= range.GetStartPos() && start <= range.GetEndPos());
+          if (!intersects) continue;
+        }
         targets.push({ name: names[i], source: properties.Get(names[i]), position: range.GetStartPos() });
       }
       targets.sort((a, b) => b.position - a.position);
-      let count = 0;
+      let restored = 0;
+      let failed = 0;
       for (let i = 0; i < targets.length; i += 1) {
         const target = targets[i];
         const range = doc.GetBookmarkRange(target.name);
-        if (!range || typeof target.source !== "string") continue;
+        if (!range || typeof target.source !== "string") {
+          failed += 1;
+          continue;
+        }
         range.Select();
-        if (!doc.EnterText(target.source)) continue;
+        if (!doc.EnterText(target.source)) {
+          failed += 1;
+          continue;
+        }
         doc.DeleteBookmark(target.name);
-        count += 1;
+        restored += 1;
       }
-      return count;
-    });
-    const count = Number(restored) || 0;
-    setStatus(`Complete: ${count} equations restored`);
-    log("success", "derender_complete", { scope, restored: count });
+      return JSON.stringify({ restored, failed });
+    }));
+    setStatus(`Complete: ${result.restored} restored, ${result.failed} failed`);
+    log(result.failed ? "error" : "success", "derender_complete", { scope, restored: result.restored, failed: result.failed });
   } catch (error) {
     setStatus("Error: source restoration failed");
     log("error", "derender_failed", { scope, errorType: error && error.name || "Error" });
