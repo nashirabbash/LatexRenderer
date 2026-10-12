@@ -34,8 +34,8 @@ async function derender(selectionOnly) {
           if (!range) continue;
           if (Asc.scope.selectionOnly) {
             if (!selectedRange) continue;
-            const rangeParagraph = range.GetParagraph();
-            const selectedParagraph = selectedRange.GetParagraph();
+            const rangeParagraph = range.GetParagraph(0);
+            const selectedParagraph = selectedRange.GetParagraph(0);
             const sameParagraph = rangeParagraph && selectedParagraph &&
               rangeParagraph.GetInternalId() === selectedParagraph.GetInternalId();
             const rangeStart = range.GetStartPos();
@@ -62,10 +62,22 @@ async function derender(selectionOnly) {
             failed += 1;
             continue;
           }
+          const position = range.GetStartPos();
           stage = "select_equation";
           range.Select();
+          stage = "move_cursor";
+          doc.MoveCursorToPos(position);
           stage = "enter_text";
           if (!doc.EnterText(target.source)) {
+            failed += 1;
+            continue;
+          }
+          stage = "get_bookmark";
+          const equationBookmark = doc.GetBookmark(target.name);
+          stage = "bookmark_get_range";
+          const equationRange = equationBookmark && equationBookmark.GetRange();
+          stage = "delete_equation";
+          if (!equationRange || !equationRange.Delete()) {
             failed += 1;
             continue;
           }

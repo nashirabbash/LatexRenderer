@@ -1,6 +1,10 @@
 # Changelog
 
+- Insert saved LaTeX at the bookmarked equation position, then delete the still-bookmarked math; preserve math if source insertion fails.
+- Render display equations before splitting surrounding text, preventing paragraph breaks from separating LaTeX source from its closing delimiter.
+- Pass required paragraph index to ONLYOFFICE `GetParagraph(0)` during rendering and selection restoration; align editor mock with API contract.
 - Remove marked source before inserting native math so insertion-only editor behavior cannot leave duplicate LaTeX; preserve source on equation failures and bookmark inserted math for restoration.
+- Re-resolve marked sources after editor position shifts and retry deletion through a fresh paragraph range, allowing every equation to render in one pass.
 - Replace marked inline LaTeX with native equations and add source-restoration actions.
 
 - Support `$...$`, `\(...\)`, `$$...$$`, and `\[...\]` with inline or display paragraph layout and exact source restoration.

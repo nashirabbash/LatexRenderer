@@ -134,7 +134,8 @@ async function renderEquations() {
           for (let j = 0; j < ranges.length; j += 1) {
             if (ranges[j].GetStartPos() === equation.position) range = ranges[j];
           }
-          if (!range) {
+          range = range || ranges[ranges.length - 1];
+          if (!range || range.GetText() !== equation.source) {
             failures.range += 1;
             continue;
           }
@@ -153,29 +154,40 @@ async function renderEquations() {
             failures.bookmarkRange += 1;
             continue;
           }
-          if (equation.display) {
-            const paragraphText = paragraphs[equation.paragraph].GetText();
-            const start = bookmarkedRange.GetStartPos();
-            if (equation.start + equation.source.length < paragraphText.length) {
-              doc.MoveCursorToPos(start + equation.source.length);
-              doc.InsertParagraphBreak();
-            }
-            if (equation.start > 0) {
-              doc.MoveCursorToPos(start);
-              doc.InsertParagraphBreak();
-            }
-          }
           bookmarkedRange = doc.GetBookmarkRange(bookmarkName);
           if (!bookmarkedRange) {
             failures.bookmarkRange += 1;
             continue;
           }
-          bookmarkedRange.Select();
           const start = bookmarkedRange.GetStartPos();
           sourcePosition = start;
-          if (!bookmarkedRange.Delete()) {
+          const paragraph = bookmarkedRange.GetParagraph(0);
+          const text = paragraph.GetText();
+          let localStart = equation.start;
+          if (text.slice(localStart, localStart + equation.source.length) !== equation.source) {
+            localStart = text.lastIndexOf(equation.source);
+          }
+          if (localStart < 0) {
             failures.range += 1;
             continue;
+          }
+          const splitBefore = equation.display && text.slice(0, localStart).trim().length > 0;
+          const splitAfter = equation.display && text.slice(localStart + equation.source.length).trim().length > 0;
+          const expectedText = text.slice(0, localStart) + text.slice(localStart + equation.source.length);
+          bookmarkedRange.Select();
+          bookmarkedRange.Delete();
+          if (paragraph.GetText() !== expectedText) {
+            const range = paragraph.GetRange(localStart, localStart + equation.source.length);
+            if (!range || range.GetText() !== equation.source) {
+              failures.range += 1;
+              continue;
+            }
+            range.Select();
+            range.Delete();
+            if (paragraph.GetText() !== expectedText) {
+              failures.range += 1;
+              continue;
+            }
           }
           sourceDeleted = true;
           removeBookmark(bookmarkName);
@@ -192,6 +204,16 @@ async function renderEquations() {
           if (!renderedRange || !renderedRange.AddBookmark(bookmarkName)) {
             failures.bookmarkRange += 1;
             continue;
+          }
+          const renderedStart = renderedRange.GetStartPos();
+          const renderedEnd = renderedRange.GetEndPos();
+          if (splitAfter) {
+            doc.MoveCursorToPos(renderedEnd);
+            doc.InsertParagraphBreak();
+          }
+          if (splitBefore) {
+            doc.MoveCursorToPos(renderedStart);
+            doc.InsertParagraphBreak();
           }
           count += 1;
         } catch (_error) {

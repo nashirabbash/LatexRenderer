@@ -142,10 +142,99 @@ test("replaces marked source when editor inserts math beside selected text", asy
   expect(regions.body.text).toBe("Result $a^2+b^2=c^2$ end");
 });
 
-test("reports the editor operation that throws during source restoration", async () => {
+test("renders display equations before paragraph breaks can split their source", async () => {
+  regions.body.text = "$$\\int_0^1 x^2 dx=\\frac{1}{3}$$\n\\[\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}\\]";
+  for (const region of ["table", "header", "footer"]) regions[region].text = "No equations";
+  document.InsertParagraphBreak = () => {
+    document.displayBreaks += 1;
+    for (const bookmark of document.bookmarks.values()) {
+      if (!bookmark.source.startsWith("$$") && !bookmark.source.startsWith("\\[")) continue;
+      bookmark.paragraph.text = bookmark.paragraph.text.replace(
+        bookmark.source,
+        bookmark.source.slice(0, -2) + "\n" + bookmark.source.slice(-2),
+      );
+    }
+  };
+
   const render = makeButton();
   attachRenderAction(render);
   await render.click();
+
+  expect(regions.body.text).toBe("[\\int_0^1 x^2 dx=\\frac{1}{3}]\n[\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}]");
+  const restore = makeButton();
+  attachDerenderActions(makeButton(), restore);
+  await restore.click();
+  expect(regions.body.text).toBe("$$\\int_0^1 x^2 dx=\\frac{1}{3}$$\n\\[\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}\\]");
+});
+
+test("retries source deletion with a fresh document range", async () => {
+  regions.body.text = "Hypotheses ($H_0$) and ($H_1$).";
+  for (const region of ["table", "header", "footer"]) regions[region].text = "No equations";
+  const getBookmarkRange = document.GetBookmarkRange;
+  document.GetBookmarkRange = (name) => {
+    const range = getBookmarkRange(name);
+    if (range) range.Delete = () => false;
+    return range;
+  };
+  const render = makeButton();
+  attachRenderAction(render);
+  await render.click();
+
+  expect(regions.body.text).toBe("Hypotheses ([H_0]) and ([H_1]).");
+});
+
+test("reuses a live search result when editor positions shift", async () => {
+  regions.body.text = "Hypotheses ($H_0$) and ($H_1$).";
+  for (const region of ["table", "header", "footer"]) regions[region].text = "No equations";
+  const search = regions.body.Search.bind(regions.body);
+  const calls = new Map();
+  regions.body.Search = (source, ...args) => {
+    const ranges = search(source, ...args);
+    calls.set(source, (calls.get(source) || 0) + 1);
+    if (calls.get(source) !== 2) return ranges;
+    return ranges.map((range) => ({
+      ...range,
+      GetStartPos: () => range.GetStartPos() + 100,
+    }));
+  };
+  const render = makeButton();
+  attachRenderAction(render);
+  await render.click();
+
+  expect(regions.body.text).toBe("Hypotheses ([H_0]) and ([H_1]).");
+});
+
+test("restores source in place when EnterText inserts beside selected math", async () => {
+  regions.body.text = "Before $a$ and $b$ after";
+  for (const region of ["table", "header", "footer"]) regions[region].text = "No equations";
+  const render = makeButton();
+  attachRenderAction(render);
+  await render.click();
+  expect(regions.body.text).toBe("Before [a] and [b] after");
+
+  const insert = document.EnterText;
+  document.EnterText = (source) => {
+    if (document.selected) {
+      document.cursor = document.selected.GetStartPos();
+      document.activeParagraph = document.selected.paragraph;
+      document.selected = null;
+    }
+    return insert(source);
+  };
+  const restore = makeButton();
+  attachDerenderActions(makeButton(), restore);
+  await restore.click();
+
+  expect(regions.body.text).toBe("Before $a$ and $b$ after");
+});
+
+test("reports the editor operation that throws during source restoration", async () => {
+  regions.body.text = "Before $a$ after";
+  for (const region of ["table", "header", "footer"]) regions[region].text = "No equations";
+  const render = makeButton();
+  attachRenderAction(render);
+  await render.click();
+  const before = regions.body.text;
   const all = makeButton();
   attachDerenderActions(makeButton(), all);
   document.EnterText = () => { throw new Error("editor failure"); };
@@ -165,6 +254,7 @@ test("reports the editor operation that throws during source restoration", async
     stage: "enter_text",
     errorType: "Error",
   });
+  expect(regions.body.text).toBe(before);
 });
 
 test("restores native equations through bookmark objects when direct range lookup fails", async () => {

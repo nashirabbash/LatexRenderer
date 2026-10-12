@@ -5,6 +5,9 @@ function makeParagraph(text, name) {
     text,
     name,
     GetInternalId: () => name,
+    GetRange(start, end) {
+      return makeRange(this, start, this.text.slice(start, end));
+    },
     GetText() { return this.text; },
     Search(source) {
       const ranges = [];
@@ -24,8 +27,9 @@ export function makeRange(paragraph, start, source, currentLength = source.lengt
     source,
     name,
     currentLength,
+    GetText() { return source; },
     GetStartPos: () => start,
-    GetParagraph: () => paragraph,
+    GetParagraph: (position) => position === 0 ? paragraph : null,
     GetEndPos: () => start + currentLength,
     AddBookmark(bookmarkName) {
       document.bookmarks.set(bookmarkName, { paragraph, start, source, currentLength: source.length });
@@ -44,7 +48,10 @@ function replaceRange(range, replacement) {
   const start = range.GetStartPos();
   const delta = replacement.length - range.currentLength;
   for (const bookmark of document.bookmarks.values()) {
-    if (bookmark.paragraph === range.paragraph && bookmark.start > start) bookmark.start += delta;
+    if (bookmark.paragraph !== range.paragraph) continue;
+    if (bookmark.start > start || (bookmark.start === start && range.currentLength === 0 && delta > 0)) {
+      bookmark.start += delta;
+    }
   }
   range.paragraph.text = range.paragraph.text.slice(0, start) + replacement + range.paragraph.text.slice(start + range.currentLength);
   const bookmark = document.bookmarks.get(range.name);
