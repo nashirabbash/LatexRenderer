@@ -15,29 +15,52 @@ afterEach(() => {
 });
 
 describe("document equation rendering", () => {
-  test("skips an unsupported equation, renders later equations, and keeps source out of logs", async () => {
-    const text = "$unsupported_secret$ then $x+1$";
-    const bookmarkRanges = new Map();
-    const paragraph = {
-      GetText: () => text,
-      Search: (source) => {
-        const ranges = [];
-        let start = text.indexOf(source);
-        while (start >= 0) {
-          const position = start;
-          const range = {
-            GetStartPos: () => position,
-            AddBookmark: (name) => { bookmarkRanges.set(name, range); return true; },
-            Select: () => {},
-          };
-          ranges.push(range);
-          start = text.indexOf(source, start + source.length);
-        }
-        return ranges;
-      },
+  test("renders body, table, header, and footer while skipping failures and protecting source", async () => {
+    const texts = {
+      body: "$unsupported_secret$",
+      table: "$table$",
+      header: "$header$",
+      footer: "$footer$",
     };
+    const bookmarkRanges = new Map();
+    function makeParagraph(text) {
+      return {
+        GetText: () => text,
+        Search: (source) => {
+          const ranges = [];
+          const start = text.indexOf(source);
+          if (start >= 0) {
+            const position = start;
+            const range = {
+              GetStartPos: () => position,
+              AddBookmark: (name) => { bookmarkRanges.set(name, range); return true; },
+              Select: () => {},
+            };
+            ranges.push(range);
+          }
+          return ranges;
+        },
+      };
+    }
+    function makeContent(id, paragraph) {
+      return {
+        GetInternalId: () => id,
+        GetAllParagraphs: () => [paragraph],
+        GetAllTables: () => [],
+      };
+    }
+    const paragraphs = Object.fromEntries(Object.entries(texts).map(([name, text]) => [name, makeParagraph(text)]));
+    const tableContent = makeContent("table", paragraphs.table);
+    const tableCell = { GetContent: () => tableContent };
+    const tableRow = { GetCellsCount: () => 1, GetCell: () => tableCell };
+    const table = { GetRowsCount: () => 1, GetRow: () => tableRow };
+    const header = makeContent("header", paragraphs.header);
+    const footer = makeContent("footer", paragraphs.footer);
     const document = {
-      GetAllParagraphs: () => [paragraph],
+      GetInternalId: () => "document",
+      GetAllParagraphs: () => [paragraphs.body],
+      GetAllTables: () => [table],
+      GetSections: () => [{ GetHeader: () => header, GetFooter: () => footer }],
       GetCustomProperties: () => ({ Add: () => true }),
       GetBookmarkRange: (name) => bookmarkRanges.get(name),
       AddMathEquation: (latex) => {
@@ -67,8 +90,10 @@ describe("document equation rendering", () => {
 
     await button.click();
 
-    expect(statusElement.textContent).toContain("1 rendered, 1 failed");
-    expect(paragraph.GetText()).toBe(text);
+    expect(statusElement.textContent).toContain("3 rendered, 1 failed");
+    for (const [name, paragraph] of Object.entries(paragraphs)) {
+      expect(paragraph.GetText()).toBe(texts[name]);
+    }
     expect(logs.join("\n")).not.toContain("unsupported_secret");
     expect(logs.some((entry) => entry.includes('"event":"render_complete"'))).toBe(true);
     expect(logs.some((entry) => entry.includes('"exception":1'))).toBe(true);

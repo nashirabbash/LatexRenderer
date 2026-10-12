@@ -10,4 +10,11 @@
 - Report equation positioning, bookmark, metadata, and insertion failure counts.
 - Split display paragraphs before inserting math to retain source bookmarks.
 
+- Render and restore marked equations throughout document body, tables, headers, and footers.
+- Restore selected equations when paragraph ranges overlap but editor intersection is empty.
+- Recreate equation ownership bookmarks when equation insertion removes the original bookmark.
+- Report the failing document API stage when source restoration throws.
+- Resolve de-render targets through bookmark objects instead of direct bookmark-range lookup.
+- Document installation, development, supported markers, and MIT/third-party license boundaries.
+- Add title-free architecture and render/de-render sequence diagrams to README.
 - Skip equation-specific render failures, continue later equations, and report operation counts without logging LaTeX source.

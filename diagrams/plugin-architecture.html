@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Plugin architecture diagram</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&family=Noto+Serif:ital@0;1&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@400&family=Noto+Sans+TC:wght@400;500;600&family=Noto+Serif+TC:wght@400&display=swap" rel="stylesheet">
+  <style>
+    :root { --paper: #f5f5f5; --ink: #2d3142; --muted: #4f5d75; --soft: #7a8399; --accent: #eb6c36; --link: #2e5aa8; --sans: 'Geist', system-ui, sans-serif; --mono: 'Geist Mono', monospace; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; width: 100%; min-height: 100%; background: var(--paper); color: var(--ink); }
+    body { font-family: var(--sans); }
+    .diagram-container { width: 100%; overflow-x: auto; }
+    svg { display: block; width: 100%; min-width: 1280px; }
+    @media print { .diagram-container { overflow-x: visible; } svg { min-width: 0; } }
+  </style>
+</head>
+<body>
+  <main class="diagram-container">
+    <svg viewBox="0 0 1280 720" width="1280" height="720" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="plugin-architecture-title plugin-architecture-desc">
+      <title id="plugin-architecture-title">LaTeX Renderer plugin architecture</title>
+      <desc id="plugin-architecture-desc">The plugin panel sends render or restore actions through the plugin runtime and ONLYOFFICE document API, which updates native equations and source metadata in the Word document.</desc>
+      <defs>
+        <marker id="plugin-architecture-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker>
+        <marker id="plugin-architecture-arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#eb6c36"/></marker>
+      </defs>
+      <rect x="1008" y="208" width="232" height="352" rx="8" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.12)" stroke-width="1"/>
+      <rect x="1020" y="198" width="104" height="16" rx="2" fill="#f5f5f5"/>
+      <text x="1072" y="210" text-anchor="middle" fill="#4f5d75" font-family="'Geist Mono', monospace" font-size="8" font-weight="500" letter-spacing="0.14em">WORD DOCUMENT</text>
+
+      <g fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#plugin-architecture-arrow)">
+        <path d="M196 390 H268"/>
+        <path d="M436 390 H500"/>
+        <path d="M948 304 H1028"/>
+        <path d="M948 476 H1028"/>
+      </g>
+      <path d="M692 390 H756" fill="none" stroke="#eb6c36" stroke-width="1.2" marker-end="url(#plugin-architecture-arrow-accent)"/>
+
+      <g font-family="'Geist Mono', monospace" font-size="8" fill="#4f5d75" text-anchor="middle" letter-spacing="0.04em">
+        <rect x="212" y="368" width="40" height="14" rx="2" fill="#f5f5f5"/>
+        <text x="232" y="378">click</text>
+        <rect x="447" y="368" width="42" height="14" rx="2" fill="#f5f5f5"/>
+        <text x="468" y="378">action</text>
+        <rect x="702" y="368" width="44" height="14" rx="2" fill="#f5f5f5"/>
+        <text x="724" y="378">API call</text>
+        <rect x="964" y="282" width="48" height="14" rx="2" fill="#f5f5f5"/>
+        <text x="988" y="292">math</text>
+        <rect x="956" y="454" width="64" height="14" rx="2" fill="#f5f5f5"/>
+        <text x="988" y="464">source</text>
+      </g>
+
+
+      <g>
+        <rect x="48" y="346" width="148" height="88" rx="6" fill="rgba(79,93,117,0.10)" stroke="#7a8399" stroke-width="1"/>
+        <rect x="60" y="356" width="40" height="14" rx="2" fill="rgba(45,49,66,0.05)"/>
+        <text x="80" y="366" text-anchor="middle" fill="#4f5d75" font-family="'Geist Mono', monospace" font-size="8" letter-spacing="0.1em">ACTOR</text>
+        <text x="60" y="394" fill="#2d3142" font-family="'Geist', sans-serif" font-size="12" font-weight="600">User</text>
+        <text x="60" y="414" fill="#4f5d75" font-family="'Geist Mono', monospace" font-size="9">marked LaTeX</text>
+      </g>
+
+      <g>
+        <rect x="268" y="346" width="168" height="88" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+        <rect x="280" y="356" width="48" height="14" rx="2" fill="rgba(45,49,66,0.05)"/>
+        <text x="304" y="366" text-anchor="middle" fill="#4f5d75" font-family="'Geist Mono', monospace" font-size="8" letter-spacing="0.1em">PANEL</text>
+        <text x="280" y="394" fill="#2d3142" font-family="'Geist', sans-serif" font-size="12" font-weight="600">Plugin panel</text>
+        <text x="280" y="414" fill="#4f5d75" font-family="'Geist Mono', monospace" font-size="9">render · de-render</text>
+      </g>
+
+      <g>
+        <rect x="500" y="338" width="192" height="104" rx="6" fill="rgba(235,108,54,0.08)" stroke="#eb6c36" stroke-width="1.2"/>
+        <rect x="512" y="348" width="64" height="14" rx="2" fill="rgba(235,108,54,0.12)" stroke="#eb6c36" stroke-width="0.8"/>
+        <text x="544" y="358" text-anchor="middle" fill="#2d3142" font-family="'Geist Mono', monospace" font-size="8" letter-spacing="0.1em">BUNDLE</text>
+        <text x="512" y="390" fill="#2d3142" font-family="'Geist', sans-serif" font-size="12" font-weight="600">Plugin runtime</text>
+        <text x="512" y="412" fill="#4f5d75" font-family="'Geist Mono', monospace" font-size="9">parse · route · restore</text>
+      </g>
+
+      <g>
+        <rect x="756" y="286" width="192" height="208" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+        <rect x="772" y="300" width="44" height="14" rx="2" fill="rgba(45,49,66,0.05)"/>
+        <text x="794" y="310" text-anchor="middle" fill="#4f5d75" font-family="'Geist Mono', monospace" font-size="8" letter-spacing="0.1em">API</text>
+        <text x="772" y="344" fill="#2d3142" font-family="'Geist', sans-serif" font-size="12" font-weight="600">Document API</text>
+        <text x="772" y="366" fill="#4f5d75" font-family="'Geist Mono', monospace" font-size="9">scan · insert · restore</text>
+        <line x1="772" y1="390" x2="932" y2="390" stroke="rgba(45,49,66,0.12)" stroke-width="1"/>
+        <text x="772" y="422" fill="#4f5d75" font-family="'Geist Mono', monospace" font-size="9">AddMathEquation</text>
+        <text x="772" y="446" fill="#4f5d75" font-family="'Geist Mono', monospace" font-size="9">bookmark · EnterText</text>
+      </g>
+
+      <g>
+        <rect x="1028" y="260" width="192" height="88" rx="6" fill="#ffffff" stroke="#4f5d75" stroke-width="1"/>
+        <rect x="1040" y="270" width="44" height="14" rx="2" fill="rgba(45,49,66,0.05)"/>
+        <text x="1062" y="280" text-anchor="middle" fill="#4f5d75" font-family="'Geist Mono', monospace" font-size="8" letter-spacing="0.1em">MATH</text>
+        <text x="1040" y="308" fill="#2d3142" font-family="'Geist', sans-serif" font-size="12" font-weight="600">Native equation</text>
+        <text x="1040" y="330" fill="#4f5d75" font-family="'Geist Mono', monospace" font-size="9">editable Office math</text>
+      </g>
+
+      <g>
+        <rect x="1028" y="432" width="192" height="88" rx="6" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/>
+        <rect x="1040" y="442" width="52" height="14" rx="2" fill="#f5f5f5"/>
+        <text x="1066" y="452" text-anchor="middle" fill="#4f5d75" font-family="'Geist Mono', monospace" font-size="8" letter-spacing="0.1em">SOURCE</text>
+        <text x="1040" y="480" fill="#2d3142" font-family="'Geist', sans-serif" font-size="12" font-weight="600">Source record</text>
+        <text x="1040" y="502" fill="#4f5d75" font-family="'Geist Mono', monospace" font-size="9">bookmark + property</text>
+      </g>
+    </svg>
+  </main>
+</body>
+</html>

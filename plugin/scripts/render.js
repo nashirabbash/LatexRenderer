@@ -10,63 +10,123 @@ async function renderEquations() {
   setStatus("Running: rendering equations");
   log("debug", "render_started");
   try {
-    const paragraphs = JSON.parse(await callEditor(function () {
-      const all = Api.GetDocument().GetAllParagraphs();
+    const texts = JSON.parse(await callEditor(function () {
+      function addContent(content, paragraphs, seen) {
+        if (!content) return;
+        const id = content.GetInternalId();
+        if (seen[id]) return;
+        seen[id] = true;
+        const ownParagraphs = content.GetAllParagraphs();
+        for (let i = 0; i < ownParagraphs.length; i += 1) paragraphs.push(ownParagraphs[i]);
+        const tables = content.GetAllTables();
+        for (let i = 0; i < tables.length; i += 1) {
+          const table = tables[i];
+          for (let row = 0; row < table.GetRowsCount(); row += 1) {
+            const tableRow = table.GetRow(row);
+            for (let cell = 0; cell < tableRow.GetCellsCount(); cell += 1) {
+              addContent(tableRow.GetCell(cell).GetContent(), paragraphs, seen);
+            }
+          }
+        }
+      }
+      const doc = Api.GetDocument();
+      const paragraphs = [];
+      const seen = {};
+      addContent(doc, paragraphs, seen);
+      const sections = doc.GetSections();
+      const types = ["default", "first", "even"];
+      for (let i = 0; i < sections.length; i += 1) {
+        for (let j = 0; j < types.length; j += 1) {
+          addContent(sections[i].GetHeader(types[j], false), paragraphs, seen);
+          addContent(sections[i].GetFooter(types[j], false), paragraphs, seen);
+        }
+      }
       const texts = [];
-      for (let i = 0; i < all.length; i += 1) texts.push(all[i].GetText());
+      for (let i = 0; i < paragraphs.length; i += 1) texts.push(paragraphs[i].GetText());
       return JSON.stringify(texts);
     }));
     const equations = [];
-    paragraphs.forEach((text, paragraph) => {
-      findMarkedEquations(text).forEach((equation) => equations.push({ ...equation, paragraph }));
+    let display = 0;
+    texts.forEach((text, paragraph) => {
+      findMarkedEquations(text).forEach((equation) => {
+        if (equation.display) display += 1;
+        equations.push({ ...equation, paragraph });
+      });
     });
     if (!equations.length) {
       setStatus("Complete: no marked equations found");
       log("success", "render_complete", { rendered: 0, failed: 0 });
       return;
     }
-    equations.forEach((equation) => {
-      if (equation.display) log("debug", "display_equation_separation", { paragraph: equation.paragraph, start: equation.start });
-    });
 
     window.Asc.scope.equations = JSON.stringify(equations);
-    const positioned = JSON.parse(await callEditor(function () {
-      const all = Api.GetDocument().GetAllParagraphs();
+    const rendered = await callEditor(function () {
+      function addContent(content, paragraphs, seen) {
+        if (!content) return;
+        const id = content.GetInternalId();
+        if (seen[id]) return;
+        seen[id] = true;
+        const ownParagraphs = content.GetAllParagraphs();
+        for (let i = 0; i < ownParagraphs.length; i += 1) paragraphs.push(ownParagraphs[i]);
+        const tables = content.GetAllTables();
+        for (let i = 0; i < tables.length; i += 1) {
+          const table = tables[i];
+          for (let row = 0; row < table.GetRowsCount(); row += 1) {
+            const tableRow = table.GetRow(row);
+            for (let cell = 0; cell < tableRow.GetCellsCount(); cell += 1) {
+              addContent(tableRow.GetCell(cell).GetContent(), paragraphs, seen);
+            }
+          }
+        }
+      }
+      function getParagraphs() {
+        const paragraphs = [];
+        const seen = {};
+        addContent(doc, paragraphs, seen);
+        const sections = doc.GetSections();
+        const types = ["default", "first", "even"];
+        for (let i = 0; i < sections.length; i += 1) {
+          for (let j = 0; j < types.length; j += 1) {
+            addContent(sections[i].GetHeader(types[j], false), paragraphs, seen);
+            addContent(sections[i].GetFooter(types[j], false), paragraphs, seen);
+          }
+        }
+        return paragraphs;
+      }
+      const doc = Api.GetDocument();
+      let paragraphs = getParagraphs();
       const equations = JSON.parse(Asc.scope.equations);
-      const result = [];
+      const positioned = [];
+      let unpositioned = 0;
       for (let i = 0; i < equations.length; i += 1) {
         const equation = equations[i];
         try {
-          const ranges = all[equation.paragraph].Search(equation.source, true);
+          const ranges = paragraphs[equation.paragraph].Search(equation.source, true);
           let occurrence = 0;
           for (let j = 0; j < i; j += 1) {
             if (equations[j].paragraph === equation.paragraph && equations[j].source === equation.source) occurrence += 1;
           }
-          if (ranges[occurrence]) result.push({ ...equation, position: ranges[occurrence].GetStartPos() });
+          if (ranges[occurrence]) positioned.push({ ...equation, position: ranges[occurrence].GetStartPos() });
+          else unpositioned += 1;
         } catch (_error) {
+          unpositioned += 1;
         }
       }
-      return JSON.stringify(result);
-    }));
-    window.Asc.scope.positioned = JSON.stringify(positioned);
-    const unpositioned = equations.length - positioned.length;
-    const rendered = await callEditor(function () {
-      const doc = Api.GetDocument();
+      positioned.sort((a, b) => b.paragraph - a.paragraph || b.position - a.position);
       const properties = doc.GetCustomProperties();
-      const equations = JSON.parse(Asc.scope.positioned).sort((a, b) => b.position - a.position);
+      const failures = { range: 0, bookmark: 0, property: 0, bookmarkRange: 0, equation: 0, exception: 0 };
       const removeBookmark = (name) => {
         try {
           doc.DeleteBookmark(name);
         } catch (_error) {
         }
       };
-      const failures = { range: 0, bookmark: 0, property: 0, bookmarkRange: 0, equation: 0, exception: 0 };
       let count = 0;
-      for (let i = 0; i < equations.length; i += 1) {
-        const equation = equations[i];
+      for (let i = 0; i < positioned.length; i += 1) {
+        const equation = positioned[i];
         let bookmarkName;
         try {
-          const paragraphs = doc.GetAllParagraphs();
+          paragraphs = getParagraphs();
           const ranges = paragraphs[equation.paragraph].Search(equation.source, true);
           let range = null;
           for (let j = 0; j < ranges.length; j += 1) {
@@ -114,22 +174,30 @@ async function renderEquations() {
             failures.equation += 1;
             continue;
           }
+          if (!doc.GetBookmarkRange(bookmarkName)) {
+            const renderedRange = doc.GetRangeBySelect();
+            if (!renderedRange || !renderedRange.AddBookmark(bookmarkName) || !doc.GetBookmarkRange(bookmarkName)) {
+              failures.bookmarkRange += 1;
+              continue;
+            }
+          }
           count += 1;
         } catch (_error) {
           if (bookmarkName) removeBookmark(bookmarkName);
           failures.exception += 1;
         }
       }
-      return JSON.stringify({ count, failures });
+      return JSON.stringify({ count, unpositioned, failures });
     });
     const result = JSON.parse(rendered);
     const renderedCount = Number(result.count) || 0;
     const failed = equations.length - renderedCount;
-    setStatus(`Complete: ${renderedCount} rendered, ${failed} failed (position ${unpositioned}, range ${result.failures.range}, bookmark ${result.failures.bookmark}, property ${result.failures.property}, editor ${result.failures.equation}, exception ${result.failures.exception})`);
+    setStatus(`Complete: ${renderedCount} rendered, ${failed} failed (position ${result.unpositioned}, range ${result.failures.range}, bookmark ${result.failures.bookmark}, property ${result.failures.property}, editor ${result.failures.equation}, exception ${result.failures.exception})`);
+    if (display) log("debug", "display_equations_found", { count: display });
     log(failed ? "error" : "success", "render_complete", {
       rendered: renderedCount,
       failed,
-      unpositioned,
+      unpositioned: result.unpositioned,
       ...result.failures,
     });
   } catch (error) {
