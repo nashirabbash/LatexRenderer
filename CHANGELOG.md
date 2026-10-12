@@ -6,3 +6,4 @@
 - Separate plugin operations by responsibility and restore equations intersecting current selection.
 - Report failed source restorations and handle collapsed equation selections.
 - Set the plugin panel entry point to `index.html` for desktop loading.
+- Refresh document paragraphs after each equation insertion.

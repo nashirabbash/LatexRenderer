@@ -49,11 +49,11 @@ async function renderEquations() {
     window.Asc.scope.positioned = JSON.stringify(positioned);
     const rendered = await callEditor(function () {
       const doc = Api.GetDocument();
-      const paragraphs = doc.GetAllParagraphs();
       const properties = doc.GetCustomProperties();
       const equations = JSON.parse(Asc.scope.positioned).sort((a, b) => b.position - a.position);
       let count = 0;
       for (let i = 0; i < equations.length; i += 1) {
+        const paragraphs = doc.GetAllParagraphs();
         const equation = equations[i];
         const ranges = paragraphs[equation.paragraph].Search(equation.source, true);
         let range = null;
