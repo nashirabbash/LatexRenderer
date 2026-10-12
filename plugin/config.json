@@ -5,7 +5,8 @@
   "baseUrl": "",
   "variations": [
     {
-      "description": "Render inline marked LaTeX equations and restore their source",
+      "description": "Render inline and display marked LaTeX equations and restore their source",
+      "url": "index.html",
       "EditorsSupport": ["word"],
       "isViewer": false,
       "isVisual": true,
