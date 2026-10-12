@@ -9,3 +9,5 @@
 - Refresh document paragraphs after each equation insertion.
 - Report equation positioning, bookmark, metadata, and insertion failure counts.
 - Split display paragraphs before inserting math to retain source bookmarks.
+
+- Skip equation-specific render failures, continue later equations, and report operation counts without logging LaTeX source.

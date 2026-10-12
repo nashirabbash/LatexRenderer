@@ -23,4 +23,4 @@ cd plugin && zip -r ../latexrenderer.plugin .
 
 In Document Editor, open **Plugins → Plugin Manager → My plugins → Add plugin**, select `latexrenderer.plugin`, then open **Plugins → LaTeX Renderer**.
 
-Use **Render Equations** to convert inline marked equations in the document body. Select a plugin-created equation before **De-render Selection**, or use **De-render All Equations** to restore all equations with retained source metadata.
+Use **Render Equations** to convert marked LaTeX in the document body. Failed equations remain as source and do not prevent later equations from rendering; the panel reports rendered and failed counts. Select a plugin-created equation before **De-render Selection**, or use **De-render All Equations** to restore all equations with retained source metadata.
