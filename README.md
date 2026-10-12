@@ -1,6 +1,6 @@
 # LaTeX Renderer for ONLYOFFICE Desktop
 
-This Document Editor plugin replaces inline `$...$` source with native editable Office math equations, not images. Each equation is inserted at its source range, so it stays in the same paragraph and follows surrounding text size. A bookmark and document custom property retain the exact marked source for de-rendering in editors that preserve those OOXML metadata features.
+This Document Editor plugin replaces marked LaTeX (`$...$`, `\(...\)`, `$$...$$`, and `\[...\]`) with native editable Office math equations, not images. Single-dollar and parenthesized equations stay inline; double-dollar and bracketed equations occupy separate paragraphs. A bookmark and document custom property retain the exact original marked source for de-rendering in editors that preserve those OOXML metadata features.
 
 The native equation format improves portability across Word, WPS Writer, and LibreOffice Writer. Google Docs may convert equations and discard bookmarks/custom properties; cross-editor source restoration is not guaranteed.
 

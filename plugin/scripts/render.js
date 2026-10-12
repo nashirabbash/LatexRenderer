@@ -1,5 +1,5 @@
 import { callEditor } from "./editor.js";
-import { findInlineEquations } from "./equations.js";
+import { findMarkedEquations } from "./equations.js";
 import { log, setStatus } from "./status.js";
 
 export function attachRenderAction(button) {
@@ -18,13 +18,16 @@ async function renderEquations() {
     }));
     const equations = [];
     paragraphs.forEach((text, paragraph) => {
-      findInlineEquations(text).forEach((equation) => equations.push({ ...equation, paragraph }));
+      findMarkedEquations(text).forEach((equation) => equations.push({ ...equation, paragraph }));
     });
     if (!equations.length) {
-      setStatus("Complete: no inline equations found");
+      setStatus("Complete: no marked equations found");
       log("success", "render_complete", { rendered: 0, failed: 0 });
       return;
     }
+    equations.forEach((equation) => {
+      if (equation.display) log("debug", "display_equation_separation", { paragraph: equation.paragraph, start: equation.start });
+    });
 
     window.Asc.scope.equations = JSON.stringify(equations);
     const positioned = JSON.parse(await callEditor(function () {
@@ -64,9 +67,28 @@ async function renderEquations() {
           doc.DeleteBookmark(bookmarkName);
           continue;
         }
-        range.Select();
-        if (doc.AddMathEquation(equation.source.slice(1, -1), "latex")) count += 1;
-        else doc.DeleteBookmark(bookmarkName);
+        const bookmarkedRange = doc.GetBookmarkRange(bookmarkName);
+        if (!bookmarkedRange) continue;
+        bookmarkedRange.Select();
+        if (!doc.AddMathEquation(equation.latex, "latex")) {
+          doc.DeleteBookmark(bookmarkName);
+          continue;
+        }
+        if (equation.display) {
+          const paragraphText = paragraphs[equation.paragraph].GetText();
+          const insertedRange = doc.GetBookmarkRange(bookmarkName);
+          const start = insertedRange.GetStartPos();
+          const end = insertedRange.GetEndPos();
+          if (equation.start + equation.source.length < paragraphText.length) {
+            doc.MoveCursorToPos(end);
+            doc.InsertParagraphBreak();
+          }
+          if (equation.start > 0) {
+            doc.MoveCursorToPos(start);
+            doc.InsertParagraphBreak();
+          }
+        }
+        count += 1;
       }
       return count;
     });
