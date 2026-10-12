@@ -18,3 +18,4 @@
 - Document installation, development, supported markers, and MIT/third-party license boundaries.
 - Add title-free architecture and render/de-render sequence diagrams to README.
 - Skip equation-specific render failures, continue later equations, and report operation counts without logging LaTeX source.
+- Add a scalable SVG icon to the plugin toolbar entry.

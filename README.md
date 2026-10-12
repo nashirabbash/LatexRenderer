@@ -1,4 +1,7 @@
 # LaTeX Renderer for ONLYOFFICE
+<p align="center">
+  <img src="plugin/resources/icon.png" alt="LaTeX Renderer icon" width="128">
+</p>
 
 LaTeX Renderer converts marked LaTeX in ONLYOFFICE Document Editor into native, editable equations. It can restore equations created by this plugin to their original marked source. No equation images or network service required.
 
@@ -12,7 +15,7 @@ Install [Bun](https://bun.sh/) and Python 3, then run from the repository root:
 bun install
 bun run check
 cd plugin
-python3 -m zipfile -c ../latexrenderer.plugin config.json index.html styles.css scripts vendor
+python3 -m zipfile -c ../latexrenderer.plugin config.json index.html styles.css scripts vendor resources
 ```
 
 In ONLYOFFICE Document Editor, open **Plugins → Plugin Manager → My plugins → Add plugin** and select `latexrenderer.plugin`. Open **Plugins → LaTeX Renderer**.

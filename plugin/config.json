@@ -6,6 +6,7 @@
   "variations": [
     {
       "description": "Render inline and display marked LaTeX equations and restore their source",
+      "icons": "resources/icon.svg",
       "url": "index.html",
       "EditorsSupport": ["word"],
       "isViewer": false,
