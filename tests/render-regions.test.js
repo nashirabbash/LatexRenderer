@@ -239,3 +239,28 @@ test("retains de-render ownership when equation insertion replaces its original 
   expect(regions.header.text).toBe("Header $unfinished\n\\$5 $a$ \\(b\\) $$c$$ \\[d\\]");
   expect(regions.footer.text).toBe("Footer $unfinished\n\\$5 $a$ \\(b\\) $$c$$ \\[d\\]");
 });
+
+test("reports the editor operation that throws during source restoration", async () => {
+  const render = makeButton();
+  attachRenderAction(render);
+  await render.click();
+  const all = makeButton();
+  attachDerenderActions(makeButton(), all);
+  document.EnterText = () => { throw new Error("editor failure"); };
+  const originalError = console.error;
+  const errors = [];
+  console.error = (message) => errors.push(JSON.parse(message));
+  try {
+    await all.click();
+  } finally {
+    console.error = originalError;
+  }
+
+  expect(errors).toContainEqual({
+    level: "error",
+    event: "derender_failed",
+    scope: "all",
+    stage: "enter_text",
+    errorType: "Error",
+  });
+});
