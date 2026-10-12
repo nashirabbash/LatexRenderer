@@ -47,10 +47,12 @@ async function renderEquations() {
     }));
 
     window.Asc.scope.positioned = JSON.stringify(positioned);
+    const unpositioned = equations.length - positioned.length;
     const rendered = await callEditor(function () {
       const doc = Api.GetDocument();
       const properties = doc.GetCustomProperties();
       const equations = JSON.parse(Asc.scope.positioned).sort((a, b) => b.position - a.position);
+      const failures = { range: 0, bookmark: 0, property: 0, bookmarkRange: 0, equation: 0 };
       let count = 0;
       for (let i = 0; i < equations.length; i += 1) {
         const paragraphs = doc.GetAllParagraphs();
@@ -60,18 +62,29 @@ async function renderEquations() {
         for (let j = 0; j < ranges.length; j += 1) {
           if (ranges[j].GetStartPos() === equation.position) range = ranges[j];
         }
-        if (!range) continue;
+        if (!range) {
+          failures.range += 1;
+          continue;
+        }
         const bookmarkName = "latexRenderer_" + Date.now() + "_" + i + "_" + Math.random().toString(36).slice(2);
-        if (!range.AddBookmark(bookmarkName)) continue;
+        if (!range.AddBookmark(bookmarkName)) {
+          failures.bookmark += 1;
+          continue;
+        }
         if (!properties.Add(bookmarkName, equation.source)) {
           doc.DeleteBookmark(bookmarkName);
+          failures.property += 1;
           continue;
         }
         const bookmarkedRange = doc.GetBookmarkRange(bookmarkName);
-        if (!bookmarkedRange) continue;
+        if (!bookmarkedRange) {
+          failures.bookmarkRange += 1;
+          continue;
+        }
         bookmarkedRange.Select();
         if (!doc.AddMathEquation(equation.latex, "latex")) {
           doc.DeleteBookmark(bookmarkName);
+          failures.equation += 1;
           continue;
         }
         if (equation.display) {
@@ -90,12 +103,18 @@ async function renderEquations() {
         }
         count += 1;
       }
-      return count;
+      return JSON.stringify({ count, failures });
     });
-    const renderedCount = Number(rendered) || 0;
+    const result = JSON.parse(rendered);
+    const renderedCount = Number(result.count) || 0;
     const failed = equations.length - renderedCount;
-    setStatus(`Complete: ${renderedCount} rendered, ${failed} failed`);
-    log(failed ? "error" : "success", "render_complete", { rendered: renderedCount, failed });
+    setStatus(`Complete: ${renderedCount} rendered, ${failed} failed (position ${unpositioned}, range ${result.failures.range}, bookmark ${result.failures.bookmark}, property ${result.failures.property}, editor ${result.failures.equation})`);
+    log(failed ? "error" : "success", "render_complete", {
+      rendered: renderedCount,
+      failed,
+      unpositioned,
+      ...result.failures,
+    });
   } catch (error) {
     setStatus("Error: rendering failed");
     log("error", "render_failed", { errorType: error && error.name || "Error" });
