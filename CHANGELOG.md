@@ -14,3 +14,4 @@
 - Restore selected equations when paragraph ranges overlap but editor intersection is empty.
 - Recreate equation ownership bookmarks when equation insertion removes the original bookmark.
 - Report the failing document API stage when source restoration throws.
+- Resolve de-render targets through bookmark objects instead of direct bookmark-range lookup.

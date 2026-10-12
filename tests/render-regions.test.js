@@ -113,6 +113,10 @@ function setupDocument() {
       range.Select = () => { document.selected = range; document.currentRange = range; };
       return range;
     },
+    GetBookmark(name) {
+      if (!document.bookmarks.has(name)) return null;
+      return { GetRange: () => document.GetBookmarkRange(name) };
+    },
     GetAllBookmarksNames: () => [...document.bookmarks.keys()],
     GetRangeBySelect: () => document.currentRange,
     DeleteBookmark: (name) => document.bookmarks.delete(name),
@@ -263,4 +267,22 @@ test("reports the editor operation that throws during source restoration", async
     stage: "enter_text",
     errorType: "Error",
   });
+});
+
+test("restores native equations through bookmark objects when direct range lookup fails", async () => {
+  const render = makeButton();
+  attachRenderAction(render);
+  await render.click();
+  const getRange = document.GetBookmarkRange;
+  document.GetBookmark = (name) => ({ GetRange: () => getRange(name) });
+  document.GetBookmarkRange = () => { throw new Error("range lookup unavailable"); };
+
+  const all = makeButton();
+  attachDerenderActions(makeButton(), all);
+  await all.click();
+
+  expect(regions.body.text).toBe("Body $unfinished\n\\$5 $a$ \\(b\\) $$c$$ \\[d\\]");
+  expect(regions.table.text).toBe("Table $unfinished\n\\$5 $a$ \\(b\\) $$c$$ \\[d\\]");
+  expect(regions.header.text).toBe("Header $unfinished\n\\$5 $a$ \\(b\\) $$c$$ \\[d\\]");
+  expect(regions.footer.text).toBe("Footer $unfinished\n\\$5 $a$ \\(b\\) $$c$$ \\[d\\]");
 });
