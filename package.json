@@ -1,0 +1,14 @@
+{
+  "name": "latexrenderer",
+  "private": true,
+  "scripts": {
+    "build:plugin": "bun build plugin/scripts/plugin.js --bundle --target=browser --outfile=plugin/scripts/plugin.bundle.js",
+    "check": "bun run build:plugin && node --check plugin/scripts/plugin.bundle.js"
+  },
+  "dependencies": {
+    "redux": "5.0.1"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.5"
+  }
+}

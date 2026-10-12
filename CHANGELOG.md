@@ -1,3 +1,3 @@
 # Changelog
 
-- Initialize repository baseline.
+- Replace marked inline LaTeX with native equations and add source-restoration actions.

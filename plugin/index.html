@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LaTeX Renderer</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="vendor/plugins.js"></script>
+  <script src="scripts/plugin.bundle.js" defer></script>
+</head>
+<body>
+  <main>
+    <h1>LaTeX Renderer</h1>
+    <label for="size">Equation size</label>
+    <select id="size" disabled><option>Automatic</option></select>
+    <button id="render" type="button">Render Equations</button>
+    <button id="derender-selection" type="button">De-render Selection</button>
+    <button id="derender-all" type="button">De-render All Equations</button>
+    <p id="status" role="status" aria-live="polite">Idle</p>
+  </main>
+</body>
+</html>

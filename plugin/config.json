@@ -1,0 +1,16 @@
+{
+  "name": "LaTeX Renderer",
+  "guid": "asc.{F13C3EA0-5A1A-4D5E-9B40-2A56D7B49021}",
+  "minVersion": "8.2.0",
+  "baseUrl": "",
+  "variations": [
+    {
+      "description": "Render inline marked LaTeX equations and restore their source",
+      "EditorsSupport": ["word"],
+      "isViewer": false,
+      "isVisual": true,
+      "type": "panel",
+      "size": [320, 280]
+    }
+  ]
+}
