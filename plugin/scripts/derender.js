@@ -24,9 +24,16 @@ async function derender(selectionOnly) {
         if (!range) continue;
         if (Asc.scope.selectionOnly) {
           if (!selectedRange) continue;
-          const start = selectedRange.GetStartPos();
-          const end = selectedRange.GetEndPos();
-          const intersects = range.IntersectWith(selectedRange) || (start === end && start >= range.GetStartPos() && start <= range.GetEndPos());
+          const rangeParagraph = range.GetParagraph();
+          const selectedParagraph = selectedRange.GetParagraph();
+          const sameParagraph = rangeParagraph && selectedParagraph &&
+            rangeParagraph.GetInternalId() === selectedParagraph.GetInternalId();
+          const rangeStart = range.GetStartPos();
+          const rangeEnd = range.GetEndPos();
+          const selectionStart = selectedRange.GetStartPos();
+          const selectionEnd = selectedRange.GetEndPos();
+          const intersects = range.IntersectWith(selectedRange) ||
+            (sameParagraph && rangeStart <= selectionEnd && selectionStart <= rangeEnd);
           if (!intersects) continue;
         }
         targets.push({ name: names[i], source: properties.Get(names[i]), position: range.GetStartPos() });

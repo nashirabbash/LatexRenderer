@@ -11,3 +11,4 @@
 - Split display paragraphs before inserting math to retain source bookmarks.
 
 - Render and restore marked equations throughout document body, tables, headers, and footers.
+- Restore selected equations when paragraph ranges overlap but editor intersection is empty.

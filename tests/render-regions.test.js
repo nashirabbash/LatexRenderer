@@ -10,6 +10,7 @@ function makeParagraph(text, name) {
   return {
     text,
     name,
+    GetInternalId: () => name,
     GetText() { return this.text; },
     Search(source) {
       const ranges = [];
@@ -30,6 +31,7 @@ function makeRange(paragraph, start, source, currentLength = source.length, name
     name,
     currentLength,
     GetStartPos: () => start,
+    GetParagraph: () => paragraph,
     GetEndPos: () => start + currentLength,
     AddBookmark(bookmarkName) {
       document.bookmarks.set(bookmarkName, { paragraph, start, source, currentLength: source.length });
@@ -183,4 +185,30 @@ test("de-renders only selected plugin equation from any supported region", async
       if (name !== region) expect(value.text).toBe(before[name]);
     }
   }
+});
+
+test("de-renders a selected equation when range intersection misses an overlapping range", async () => {
+  const render = makeButton();
+  attachRenderAction(render);
+  await render.click();
+  const name = [...document.bookmarks.keys()].find((bookmarkName) => document.bookmarks.get(bookmarkName).paragraph === regions.body);
+  const bookmark = document.bookmarks.get(name);
+  const before = regions.body.text;
+  const selectedSource = bookmark.source;
+  const delimiterLength = selectedSource.startsWith("$$") || selectedSource.startsWith("\\") ? 2 : 1;
+  const renderedEquation = `[${selectedSource.slice(delimiterLength, -delimiterLength)}]`;
+  const getBookmarkRange = document.GetBookmarkRange;
+  document.GetBookmarkRange = (bookmarkName) => {
+    const range = getBookmarkRange(bookmarkName);
+    if (range) range.IntersectWith = () => null;
+    return range;
+  };
+  document.currentRange = makeRange(bookmark.paragraph, bookmark.start, renderedEquation, renderedEquation.length);
+
+  const selection = makeButton();
+  const all = makeButton();
+  attachDerenderActions(selection, all);
+  await selection.click();
+
+  expect(regions.body.text).toBe(before.replace(renderedEquation, selectedSource));
 });
