@@ -27,8 +27,9 @@ async function derender(selectionOnly) {
         }
         const targets = [];
         for (let i = 0; i < names.length; i += 1) {
-          stage = "resolve_bookmark";
+          stage = "get_bookmark";
           const bookmark = doc.GetBookmark(names[i]);
+          stage = "bookmark_get_range";
           const range = bookmark && bookmark.GetRange();
           if (!range) continue;
           if (Asc.scope.selectionOnly) {
@@ -53,8 +54,9 @@ async function derender(selectionOnly) {
         let failed = 0;
         for (let i = 0; i < targets.length; i += 1) {
           const target = targets[i];
-          stage = "resolve_bookmark";
+          stage = "get_bookmark";
           const bookmark = doc.GetBookmark(target.name);
+          stage = "bookmark_get_range";
           const range = bookmark && bookmark.GetRange();
           if (!range || typeof target.source !== "string") {
             failed += 1;
